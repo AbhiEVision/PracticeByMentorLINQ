@@ -123,5 +123,98 @@ namespace PracticeByMentorLINQ
 			//}
 
 		}
+
+		public static void QueryOneWithLINQ()
+		{
+			var test = DataStorage.Customers
+				.Join(
+					DataStorage.Orders,
+					cust => cust.CustomerID,
+					ord => ord.CustomerId,
+					(cus, ord) => new
+					{
+						customerID = cus.CustomerID,
+						customerName = cus.CustomerName,
+						orderId = ord.OrderId,
+						orderDate = ord.OrderDate,
+						itemID = ord.ItemID
+					}
+				).Join(
+					DataStorage.Items,
+					cust => cust.itemID,
+					item => item.ItemID,
+					(cus, item) => new
+					{
+						cus.customerID,
+						cus.customerName,
+						cus.orderId,
+						cus.orderDate,
+						cus.itemID,
+						itemName = item.ItemName,
+						itemPrice = item.Price
+					}
+				).ToList();
+
+			var grouppedList = test.GroupBy(x => (x.customerID, x.orderDate)).ToList();
+
+			var sumofPrice = grouppedList
+				.Select(x => new
+				{
+					custID = x.Select(x => x.customerID),
+					totalExpense = x.Sum(x => x.itemPrice),
+					orderDate = x.Select(x => x.orderDate)
+				})
+				.ToList();
+
+			//foreach (var item in grouppedList)
+			//{
+			//	Console.Write($"cust id : {item.Key.customerID} \t order date : {item.Key.orderDate}");
+			//	foreach (var item1 in item)
+			//	{
+			//		Console.WriteLine($"\t item id : {item1.itemID} \t item price : {item1.itemPrice}");
+			//	}
+			//}
+
+			var finalmResult = grouppedList.GroupJoin(
+					grouppedList,
+					test => test.Key,
+					test => test.Key,
+					(x, y) => new
+					{
+						x.Key.customerID,
+						x.Key.orderDate,
+						totalExpese = y.Select(test => test.Select(test1 => test1.itemPrice).Sum(test3 => test3))
+					}
+			).ToList();
+
+			foreach (var item in finalmResult)
+			{
+				Console.WriteLine($"customer id : {item.customerID}\t order date : {item.orderDate}");
+				foreach (var x in item.totalExpese)
+				{
+					Console.WriteLine($"Expense : {x}");
+				}
+			}
+
+			
+			//Console.WriteLine("--------------------- order by id and price ---------------------------");
+			//foreach (var item in sumofPrice)
+			//{
+			//	foreach (var item1 in item.d)
+			//	{
+			//		Console.WriteLine(item1 + "  " + item.totalExpense);
+			//	}
+			//}
+
+			//Console.WriteLine("---------------------- order by date and price ------------------------------");
+			//foreach (var item in sumofPrice)
+			//{
+			//	foreach (var item1 in item.custID)
+			//	{
+			//		Console.WriteLine(item1 + "  " + item.totalExpense);
+			//	}
+			//}
+		}
+
 	}
 }

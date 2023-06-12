@@ -2,4 +2,4 @@
 
 using PracticeByMentorLINQ;
 
-QueryClass.FirstQuery();
+QueryClass.QueryOneWithLINQ();
